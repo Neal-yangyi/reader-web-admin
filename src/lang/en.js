@@ -65,7 +65,8 @@ export default {
     novel: 'Novel',
     user: 'User',
     chapter: 'Chapter',
-    notice: 'Notice'
+    notice: 'Notice',
+    statistics: 'Statistics'
   },
   navbar: {
     logOut: 'Log Out',
@@ -144,7 +145,8 @@ export default {
     send: 'send',
     content: 'content',
     img: 'Image',
-    create: 'Create'
+    create: 'Create',
+    chapter_name: 'ChapterName'
   },
   errorLog: {
     tips: 'Please click the bug icon in the upper right corner',

@@ -65,7 +65,8 @@ export default {
     novel: '小说',
     user: '用户',
     chapter: '章节',
-    notice: '通知公告'
+    notice: '通知公告',
+    statistics: '统计'
   },
   navbar: {
     logOut: '退出登录',
@@ -144,7 +145,8 @@ export default {
     send: '发送通知',
     content: '内容',
     img: '图片',
-    create: '新 建'
+    create: '新 建',
+    chapter_name: '章节名称'
   },
   errorLog: {
     tips: '请点击右上角bug小图标',

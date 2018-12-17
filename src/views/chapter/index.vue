@@ -1,8 +1,8 @@
 <template>
   <div class="app-container">
     <div class="filter-container">
-      <el-input :placeholder="$t('table.title')" v-model="listQuery.title" style="width: 200px;" class="filter-item" @keyup.enter.native="handleFilter"/>
-      <el-input :placeholder="$t('table.author')" v-model="listQuery.username" style="width: 200px;" class="filter-item" @keyup.enter.native="handleFilter"/>
+      <el-input :placeholder="$t('table.title')" v-model="listQuery.detail.title" style="width: 200px;" class="filter-item" @keyup.enter.native="handleFilter"/>
+      <el-input :placeholder="$t('table.author')" v-model="listQuery.detail.username" style="width: 200px;" class="filter-item" @keyup.enter.native="handleFilter"/>
       <el-select v-model="listQuery.detail.allow" :placeholder="$t('table.audit')" clearable style="width: 130px" class="filter-item">
         <el-option v-for="item in allowOptions" :key="item.value" :label="item.label" :value="item.value"/>
       </el-select>
@@ -29,7 +29,7 @@
       </el-table-column>
       <el-table-column :label="$t('table.title')" width="200">
         <template slot-scope="scope">
-          <span class="link-type" @click="handleUpdate(scope.row)">{{ scope.row.title }}</span>
+          <span>{{ scope.row.title }}</span>
         </template>
       </el-table-column>
       <el-table-column :label="$t('table.author')" width="150" align="center">
@@ -39,7 +39,7 @@
       </el-table-column>
       <el-table-column :label="$t('table.chapterName')">
         <template slot-scope="scope">
-          <span>{{ scope.row.chapter_name }}</span>
+          <span class="link-type" @click="checkContent(scope.row)">{{ scope.row.chapter_name }}</span>
         </template>
       </el-table-column>
       <el-table-column :label="$t('table.actions')" align="center" class-name="small-padding fixed-width" width="200">
@@ -56,36 +56,21 @@
       <el-pagination v-show="total>0" :current-page="listQuery.pageNum" :page-sizes="[10,20,30, 50]" :page-size="listQuery.pageSize" :total="total" background layout="total, sizes, prev, pager, next, jumper" @size-change="handleSizeChange" @current-change="handleCurrentChange"/>
     </div>
 
-    <el-dialog :title="textMap[dialogStatus]" :visible.sync="dialogFormVisible">
-      <el-form ref="dataForm" :rules="rules" :model="temp" label-position="left" label-width="70px" style="width: 400px; margin-left:50px;">
-        <el-form-item :label="$t('table.type')" prop="type">
-          <el-select v-model="temp.type" class="filter-item" placeholder="Please select">
-            <el-option v-for="item in calendarTypeOptions" :key="item.key" :label="item.display_name" :value="item.key"/>
-          </el-select>
+    <el-dialog :title="textMap[dialogStatus]" :visible.sync="contentDialog" width="70%">
+      <el-form ref="dataForm" :rules="rules" :model="temp" label-position="left" label-width="70px" style="width: 90%; margin-left:50px;">
+        <el-form-item :label="$t('table.chapter_name')" prop="chapter_name">
+          <el-input v-model="temp.chapter_name"/>
         </el-form-item>
-        <el-form-item :label="$t('table.date')" prop="timestamp">
-          <el-date-picker v-model="temp.timestamp" type="datetime" placeholder="Please pick a date"/>
-        </el-form-item>
-        <el-form-item :label="$t('table.title')" prop="title">
-          <el-input v-model="temp.title"/>
-        </el-form-item>
-        <el-form-item :label="$t('table.status')">
-          <el-select v-model="temp.status" class="filter-item" placeholder="Please select">
-            <el-option v-for="item in statusOptions" :key="item" :label="item" :value="item"/>
-          </el-select>
-        </el-form-item>
-        <el-form-item :label="$t('table.importance')">
-          <el-rate v-model="temp.importance" :colors="['#99A9BF', '#F7BA2A', '#FF9900']" :max="3" style="margin-top:8px;"/>
-        </el-form-item>
-        <el-form-item :label="$t('table.remark')">
-          <el-input :autosize="{ minRows: 2, maxRows: 4}" v-model="temp.remark" type="textarea" placeholder="Please input"/>
+        <el-form-item :label="$t('table.content')">
+          <el-input
+            :rows="20"
+            v-model="temp.content"
+            disabled
+            type="textarea"
+            style="font-size: 18px"
+            placeholder="请输入内容"/>
         </el-form-item>
       </el-form>
-      <div slot="footer" class="dialog-footer">
-        <el-button @click="dialogFormVisible = false">{{ $t('table.cancel') }}</el-button>
-        <el-button v-if="dialogStatus=='create'" type="primary" @click="createData">{{ $t('table.confirm') }}</el-button>
-        <el-button v-else type="primary" @click="updateData">{{ $t('table.confirm') }}</el-button>
-      </div>
     </el-dialog>
 
     <el-dialog :visible.sync="dialogPvVisible" title="Reading statistics">
@@ -106,7 +91,7 @@ import { fetchPv, createArticle, updateArticle } from '@/api/article'
 import { fetchList } from '@/api/chapter'
 import waves from '@/directive/waves' // 水波纹指令
 import { parseTime } from '@/utils'
-import { auditChapter } from '../../api/chapter'
+import { auditChapter, getChapter } from '../../api/chapter'
 import { sendMessage } from '../../api/message'
 
 const calendarTypeOptions = [
@@ -146,6 +131,7 @@ export default {
       list: null,
       total: null,
       listLoading: true,
+      contentDialog: false,
       listQuery: {
         pageNum: 1,
         pageSize: 20,
@@ -171,12 +157,8 @@ export default {
       statusOptions: ['published', 'draft', 'deleted'],
       showReviewer: false,
       temp: {
-        nid: undefined,
-        create_time: new Date(),
-        title: '',
-        username: '',
         chapter_name: '',
-        label_name: ''
+        content: ''
       },
       dialogFormVisible: false,
       dialogStatus: '',
@@ -374,6 +356,13 @@ export default {
           return v[j]
         }
       }))
+    },
+    checkContent(row) {
+      this.contentDialog = true
+      getChapter(row.cid).then(res => {
+        this.temp = res.data.data
+        console.log(res)
+      })
     }
   }
 }

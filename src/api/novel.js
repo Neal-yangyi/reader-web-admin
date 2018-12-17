@@ -26,3 +26,22 @@ export function auditNovel(nid, allow) {
     }
   })
 }
+
+export function findById(id) {
+  return request({
+    url: '/novel/' + id,
+    method: 'get'
+  })
+}
+
+export function select(query) {
+  return request({
+    url: '/novel/select',
+    method: 'get',
+    params: {
+      lid: query.lid,
+      state: query.state,
+      constraint: query.constraint
+    }
+  })
+}

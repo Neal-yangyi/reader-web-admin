@@ -40,7 +40,7 @@
       </el-table-column>
       <el-table-column :label="$t('table.title')" width="180">
         <template slot-scope="scope">
-          <span class="link-type" @click="handleUpdate(scope.row)">{{ scope.row.title }}</span>
+          <span class="link-type" @click="checkNovel(scope.row)">{{ scope.row.title }}</span>
         </template>
       </el-table-column>
       <el-table-column :label="$t('table.author')" width="110" align="center">
@@ -94,6 +94,29 @@
       </div>
     </el-dialog>
 
+    <el-dialog :visible.sync="novelDialog" title="小说详情">
+      <el-form label-position="left" label-width="70px" style="width: 80%; margin-left:50px;">
+        <el-form-item label="标题" prop="title">
+          <span>{{ temp.title }}</span>
+        </el-form-item>
+        <el-form-item label="作者" prop="username">
+          <span>{{ temp.username }}</span>
+        </el-form-item>
+        <el-form-item label="分类" prop="label">
+          <span>{{ temp.label_name }}</span>
+        </el-form-item>
+        <el-form-item label="封面" prop="cover">
+          <img :src="temp.cover" :alt="temp.title">
+        </el-form-item>
+        <el-form-item label="信息" prop="info">
+          <span>{{ temp.info }}</span>
+        </el-form-item>
+        <el-form-item label="介绍" prop="introduction">
+          <span>{{ temp.introduction }}</span>
+        </el-form-item>
+      </el-form>
+    </el-dialog>
+
     <el-dialog :visible.sync="dialogPvVisible" title="Reading statistics">
       <el-table :data="pvData" border fit highlight-current-row style="width: 100%">
         <el-table-column prop="key" label="Channel"/>
@@ -112,7 +135,7 @@ import { fetchPv, createArticle, updateArticle } from '@/api/article'
 import { fetchList } from '@/api/novel'
 import waves from '@/directive/waves' // 水波纹指令
 import { parseTime } from '@/utils'
-import { auditNovel } from '../../api/novel'
+import { auditNovel, findById } from '../../api/novel'
 import { sendMessage } from '../../api/message'
 
 const calendarTypeOptions = [
@@ -237,6 +260,7 @@ export default {
         state: 1
       },
       dialogFormVisible: false,
+      novelDialog: false,
       dialogStatus: '',
       textMap: {
         update: 'Edit',
@@ -325,9 +349,6 @@ export default {
       this.resetTemp()
       this.dialogStatus = 'create'
       this.dialogFormVisible = true
-      this.$nextTick(() => {
-        this.$refs['dataForm'].clearValidate()
-      })
     },
     handleDisplay(row, allow) {
       this.resetNotice()
@@ -358,9 +379,6 @@ export default {
       this.temp.timestamp = new Date(this.temp.timestamp)
       this.dialogStatus = 'update'
       this.dialogFormVisible = true
-      this.$nextTick(() => {
-        this.$refs['dataForm'].clearValidate()
-      })
     },
     handleSend() {
       this.handleAudit(this.item, this.allow)
@@ -437,6 +455,13 @@ export default {
           return v[j]
         }
       }))
+    },
+    checkNovel(row) {
+      this.novelDialog = true
+      findById(row.nid).then(res => {
+        this.temp = res.data
+        console.log(res)
+      })
     }
   }
 }

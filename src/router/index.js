@@ -129,6 +129,19 @@ export const constantRouterMap = [
     ]
   },
   {
+    path: '/statistic',
+    component: Layout,
+    redirect: '/statistic/index',
+    children: [
+      {
+        path: 'index',
+        component: () => import('@/views/statistic/index'),
+        name: 'Statistic',
+        meta: { title: 'statistic', icon: 'table', noCache: true }
+      }
+    ]
+  },
+  {
     path: '/chapter',
     component: Layout,
     redirect: '/chapter/index',

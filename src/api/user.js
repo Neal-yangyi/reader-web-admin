@@ -14,3 +14,9 @@ export function fetchList(detail, pageNum, pageSize) {
   })
 }
 
+export function findById(id) {
+  return request({
+    url: '/user/' + id,
+    method: 'get'
+  })
+}

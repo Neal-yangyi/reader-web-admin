@@ -5,7 +5,7 @@ export function fetchList(detail, pageNum, pageSize) {
     url: '/admin/chapterList',
     method: 'get',
     params: {
-      title: detail.title,
+      chapterName: detail.title,
       username: detail.username,
       allow: detail.allow,
       pageNum: pageNum,
@@ -22,5 +22,12 @@ export function auditChapter(cid, allow) {
       cid: cid,
       allow: allow
     }
+  })
+}
+
+export function getChapter(cid) {
+  return request({
+    url: '/chapter/' + cid,
+    method: 'get'
   })
 }
